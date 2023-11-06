@@ -5,8 +5,6 @@ import { Configuration, OpenAIApi } from "openai";
 
 dotenv.config();
 
-//console.log(process.env.OPENAI_API_KEY);
-
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -27,6 +25,10 @@ app.post("/", async (req, res) => {
   try {
     const prompt = req.body.prompt;
 
+    if (!prompt) {
+      return res.status(400).send({ error: "Please provide a prompt" });
+    }
+
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: `${prompt}`,
@@ -41,8 +43,11 @@ app.post("/", async (req, res) => {
       bot: response.data.choices[0].text,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ error });
+    console.error("Error in / route:", error);
+    console.error("Response data:", error.response.data);
+    console.error("Response status:", error.response.status);
+    console.error("Response headers:", error.response.headers);
+    res.status(500).send({ error: "Internal Server Error" });
   }
 });
 
